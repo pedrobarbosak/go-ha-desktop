@@ -1,0 +1,22 @@
+# Svelte 4 - Guidelines
+- Always use Svelte 4 syntax;
+- Always use typescript;
+- Prefer javascript classes over interfaces;
+- Keep it simple and pretty;
+
+# Styling - Guidelines
+- We are using tailwindcss;
+- Keep stuff simple and pretty;
+
+# Golang - Guidelines
+- We are using golang 1.23.7;
+- We are using wails + svelte for the frontend;
+- We are using go modules;
+- Keep it simple;
+
+# Project Goals
+- This is an app that allows a user to quickly manage home assistant lights;
+- There should be possible to select the home assistant server and lights you want to control on a settings page;
+- The settings should be saved even after the app is closed;
+- The app should be able to connect to the home assistant server and get the lights;
+- The app should have a systray and allow you to quickly turn on and off the lights;

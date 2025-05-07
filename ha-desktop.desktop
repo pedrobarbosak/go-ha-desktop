@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HA-Desktop
+Comment=Quickly manage your Home Assistant lights from your system tray
+Exec=ha-desktop
+Icon=icon.png
+Terminal=false
+Categories=Utility;HomeAutomation;
+Keywords=home;assistant;lights;automation;
+StartupNotify=true
