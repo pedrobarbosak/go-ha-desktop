@@ -14,6 +14,11 @@ A desktop application for quickly managing your Home Assistant lights from your 
 - Settings persistence between sessions
 - Simple and intuitive interface built with Svelte and Tailwind CSS
 
+## TODO
+- [x] Light Toggle (On/Off)
+- [ ] Control light brightness
+- [ ] Switch Toggle (On/Off)
+
 ## About
 
 HA-Desktop is built with Wails, combining Go and Svelte to create a fast, responsive desktop application. It leverages the Home Assistant API to provide seamless control of your smart home lighting.
