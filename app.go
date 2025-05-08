@@ -2,91 +2,84 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"time"
 
-	"wails-svelte/internal/config"
-	"wails-svelte/internal/ha"
 	"wails-svelte/internal/state"
 
 	"github.com/energye/systray"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const maxSystrayDevices = 15
+const (
+	maxSystrayDevices = 15
+	eventDevicesList  = "devices:list"
+	eventDevicesError = "devices:error"
+)
 
 type App struct {
 	ctx            context.Context
 	state          *state.State
 	systrayDevices [maxSystrayDevices]*systray.MenuItem
+	ticker         *time.Ticker
 }
 
 func NewApp(state *state.State) *App {
-	return &App{state: state}
+	a := &App{state: state}
+
+	if state.IsConnected() {
+		a.ticker = time.NewTicker(state.Cfg.ScanInterval * time.Second)
+	}
+
+	return a
 }
 
 func (a *App) startup(ctx context.Context) {
-	log.Println("startup")
-
 	a.ctx = ctx
-	a.systray()
-}
+	runtime.LogWarning(a.ctx, "startup")
 
-func (a *App) GetError() error {
-	return a.state.Err
-}
+	go a.systray()
+	a.updateDeviceList()
 
-func (a *App) GetDevices() ([]*ha.Device, error) {
-	return a.state.GetDevices()
-}
-
-func (a *App) GetConfig() (*config.Config, error) {
-	return a.state.GetConfig(), nil
-}
-
-func (a *App) TurnOn(entityID string) (*ha.Device, error) {
-	device, err := a.state.TurnOn(entityID)
-	if err != nil {
-		return nil, err
+	if a.ticker != nil {
+		go a.backgroundUpdate()
 	}
 
-	go a.onSystrayUpdateDevices()
-
-	return device, nil
-}
-
-func (a *App) TurnOff(entityID string) (*ha.Device, error) {
-	device, err := a.state.TurnOff(entityID)
-	if err != nil {
-		return nil, err
-	}
-
-	go a.onSystrayUpdateDevices()
-
-	return device, nil
-}
-
-func (a *App) UpdateConfig(updated *config.Config) error {
-	if err := a.state.UpdateConfig(updated); err != nil {
-		return err
-	}
-
-	go a.onSystrayUpdateDevices()
-
-	return nil
-}
-
-func (a *App) TestConnection(url string, accessToken string) error {
-	return nil
-}
-
-func (a *App) GetHA() ha.Client {
-	return a.state.Ha
-}
-
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
 
 func (a *App) systray() {
+	runtime.LogWarning(a.ctx, "starting systray")
 	systray.Run(a.onSystrayReady(), a.onSystrayExit())
+	runtime.LogWarning(a.ctx, "starting systray done")
+}
+
+func (a *App) updateDeviceList() {
+	a.eventDevicesList()
+	a.onSystrayUpdateDevices()
+}
+
+func (a *App) eventDevicesList() {
+	runtime.LogWarning(a.ctx, "emitting devices:list")
+
+	devices, err := a.state.GetDevices()
+	if err != nil {
+		runtime.LogErrorf(a.ctx, "failed to get devices: %v", err)
+		runtime.EventsEmit(a.ctx, eventDevicesError, err.Error())
+		return
+	}
+
+	runtime.LogWarning(a.ctx, "emitting devices:list successfully")
+	runtime.EventsEmit(a.ctx, eventDevicesList, devices)
+}
+
+func (a *App) backgroundUpdate() {
+	if a.ticker == nil {
+		runtime.LogWarning(a.ctx, "not running background update")
+		return
+	}
+
+	runtime.LogWarning(a.ctx, "running background update")
+	for range a.ticker.C {
+		runtime.LogWarning(a.ctx, "running background update tick")
+		a.updateDeviceList()
+	}
 }

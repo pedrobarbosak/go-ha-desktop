@@ -144,6 +144,8 @@ func (s *State) GetPinnedDevices() []*ha.Device {
 }
 
 func (s *State) connectClient() {
+	s.Ha = nil
+
 	for _, url := range s.Cfg.URls {
 		s.Ha, s.Err = ha.New(url, s.Cfg.AccessToken)
 		if s.Err != nil {
@@ -159,6 +161,13 @@ func (s *State) connectClient() {
 		log.Println("Connected to:", url)
 		return
 	}
+}
+
+func (s *State) IsConnected() bool {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	return s.Ha != nil
 }
 
 func New() *State {

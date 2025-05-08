@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"wails-svelte/internal/ha"
 
@@ -49,13 +50,15 @@ func (a *App) onSystrayReady() func() {
 
 func (a *App) onSystrayExit() func() {
 	return func() {
-		log.Println("--- Exiting...")
+		runtime.LogWarning(a.ctx, "exiting")
 		systray.Quit()
 		runtime.Quit(a.ctx)
 	}
 }
 
 func (a *App) onSystrayUpdateDevices() {
+	runtime.LogWarning(a.ctx, "updating systray devices")
+
 	for i := 0; i < maxSystrayDevices; i++ {
 		if a.systrayDevices[i] == nil {
 			continue
@@ -71,7 +74,8 @@ func (a *App) onSystrayUpdateDevices() {
 			continue
 		}
 
-		a.systrayDevices[i].SetTitle(device.Name)
+		name := strings.ReplaceAll(device.Name, "_", "-") // some OS don't like underscores in the menu item title
+		a.systrayDevices[i].SetTitle(name)
 		if device.State {
 			a.systrayDevices[i].Check()
 		}

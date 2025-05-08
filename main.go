@@ -56,7 +56,7 @@ func main() {
 		HideWindowOnClose: true,
 		BackgroundColour:  &options.RGBA{R: 27, G: 38, B: 54, A: 255},
 		AssetServer:       &assetserver.Options{Assets: assets},
-		LogLevel:          logger.WARNING,
+		LogLevel:          logger.WARNING, // use warning because default info logs a lot of stuff
 		OnStartup:         app.startup,
 		OnDomReady:        func(ctx context.Context) { log.Println("--- Dom is ready") },
 		Bind:              []interface{}{app},

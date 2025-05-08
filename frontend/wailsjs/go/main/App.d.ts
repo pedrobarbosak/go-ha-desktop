@@ -9,10 +9,6 @@ export function GetDevices():Promise<Array<ha.Device>>;
 
 export function GetError():Promise<void>;
 
-export function GetHA():Promise<ha.Client>;
-
-export function Greet(arg1:string):Promise<string>;
-
 export function TestConnection(arg1:string,arg2:string):Promise<void>;
 
 export function TurnOff(arg1:string):Promise<ha.Device>;

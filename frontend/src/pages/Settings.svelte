@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-  import {tryCatch} from "../lib/try-catch";
+    import {onMount} from 'svelte';
+    import {tryCatch} from "../lib/try-catch";
 
-  import {config} from "../../wailsjs/go/models";
-  import {GetConfig} from '../../wailsjs/go/main/App';
+    import {config} from "../../wailsjs/go/models";
+    import {GetConfig} from '../../wailsjs/go/main/App';
 
     let isLoading: boolean = false;
     let error: string | null = null;
@@ -81,7 +81,7 @@
 								<!--{#if testStatus.testing && testingUrl === url}-->
 								<!--  <span class="inline-block animate-spin">⟳</span>-->
 								<!--{:else}-->
-								  ✓
+								✓
 								<!--{/if}-->
 							</button>
 							<button
@@ -100,7 +100,8 @@
 						<span class="mr-1">+</span> Add URL
 					</button>
 
-					<p class="text-sm text-gray-500 mt-2">Example: http://192.168.1.123:8123, https://ha.mydomain.local:443</p>
+					<p class="text-sm text-gray-500 mt-2">Example: http://192.168.1.123:8123,
+						https://ha.mydomain.local:443</p>
 				</div>
 
 				<div class="mb-4">
