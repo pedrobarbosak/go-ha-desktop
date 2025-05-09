@@ -2,7 +2,7 @@
     import {createEventDispatcher, onMount} from "svelte";
     import {ha} from "../../wailsjs/go/models";
     import {tryCatch} from "../lib/try-catch";
-    import {TurnOff, TurnOn} from "../../wailsjs/go/main/App";
+    import {SetBrightness, TurnOff, TurnOn} from "../../wailsjs/go/main/App";
 
     const dispatch = createEventDispatcher();
 
@@ -18,6 +18,22 @@
         if (err != null) {
             error = err.message;
             console.error("Failed to toggle device:", err);
+            isLoading = false;
+            return;
+        }
+
+        device = data;
+        isLoading = false;
+    }
+
+    async function setBrightness(event: Event) {
+        isLoading = true;
+
+        const brightness = parseInt((event.target as HTMLInputElement).value);
+        const {data, err} = await tryCatch(SetBrightness(device.ID, brightness));
+        if (err != null) {
+            error = err.message;
+            console.error("Failed to set brightness:", err);
             isLoading = false;
             return;
         }
@@ -97,5 +113,23 @@
 				</div>
 			</div>
 		</div>
+
+		{#if device.Brightness}
+			<div class="mt-4" on:click|stopPropagation on:keydown|stopPropagation tabindex="-1" role="region"
+			     aria-label="Brightness control">
+				<label for="brightness-slider" class="block text-sm font-medium mb-1">
+					Brightness: {device.Brightness}
+				</label>
+				<input
+						id="brightness-slider"
+						type="range"
+						min="0"
+						max="255"
+						value={device.Brightness}
+						on:change={setBrightness}
+						class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+				/>
+			</div>
+		{/if}
 	{/if}
 </div>

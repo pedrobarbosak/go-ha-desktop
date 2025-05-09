@@ -10,51 +10,19 @@ import (
 	"github.com/ryanjohnsontv/go-homeassistant/logging"
 	"github.com/ryanjohnsontv/go-homeassistant/rest"
 	"github.com/ryanjohnsontv/go-homeassistant/shared/constants/domains"
-	"github.com/ryanjohnsontv/go-homeassistant/shared/types"
 )
 
 type Client interface {
-	GetLights() ([]*Device, error)
+	GetDevices() ([]*Device, error)
 	TurnOn(entityID string) ([]*Device, error)
 	TurnOff(entityID string) ([]*Device, error)
+	SetBrightness(entityID string, brightness uint) ([]*Device, error)
 }
 
 type service struct {
 	cl          *rest.Client
 	URL         string
 	AccessToken string
-}
-
-type Device struct {
-	ID    string
-	Name  string
-	Type  string
-	State bool
-	Error error
-}
-
-func NewDevice(entity types.Entity) *Device {
-	d := &Device{ID: entity.EntityID.String(), Name: entity.EntityID.Name(), Type: string(entity.EntityID.Domain())}
-
-	if entity.State.IsUnavailable() {
-		d.Error = errors.New("device is unavailable")
-		return d
-	}
-
-	if entity.State.IsUnknown() {
-		d.Error = errors.New("device is unknown")
-		return d
-	}
-
-	status, err := entity.State.AsBool()
-	if err != nil {
-		d.Error = err
-		return d
-	}
-
-	d.State = *status
-
-	return d
 }
 
 func (s *service) TurnOn(entityID string) ([]*Device, error) {
@@ -99,7 +67,29 @@ func (s *service) TurnOff(entityID string) ([]*Device, error) {
 	return devices, nil
 }
 
-func (s *service) GetLights() ([]*Device, error) {
+func (s *service) SetBrightness(entityID string, brightness uint) ([]*Device, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	data := map[string]interface{}{
+		"entity_id":  entityID,
+		"brightness": brightness,
+	}
+
+	updated, err := s.cl.CallService(ctx, domains.Light, "turn_on", data)
+	if err != nil {
+		return nil, errors.New("failed to set brightness:", err)
+	}
+
+	devices := make([]*Device, 0, len(updated))
+	for _, ent := range updated {
+		devices = append(devices, NewDevice(ent))
+	}
+
+	return devices, nil
+}
+
+func (s *service) GetDevices() ([]*Device, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -108,20 +98,20 @@ func (s *service) GetLights() ([]*Device, error) {
 		return nil, errors.New("failed to get states:", err)
 	}
 
-	lights := make([]*Device, 0, len(states))
+	devices := make([]*Device, 0, len(states))
 	for _, ent := range states {
-		if ent.EntityID.Domain() != domains.Light {
+		if ent.EntityID.Domain() != domains.Light && ent.EntityID.Name() != "switch" {
 			continue
 		}
 
-		lights = append(lights, NewDevice(ent))
+		devices = append(devices, NewDevice(ent))
 	}
 
-	slices.SortFunc(lights, func(a, b *Device) int {
+	slices.SortFunc(devices, func(a, b *Device) int {
 		return strings.Compare(a.ID, b.ID)
 	})
 
-	return lights, nil
+	return devices, nil
 }
 
 func New(url, token string) (Client, error) {

@@ -64,3 +64,14 @@ func (a *App) UpdateConfig(updated *config.Config) error {
 func (a *App) TestConnection(url string, accessToken string) error {
 	return nil
 }
+
+func (a *App) SetBrightness(entityID string, brightness uint) (*ha.Device, error) {
+	device, err := a.state.SetBrightness(entityID, brightness)
+	if err != nil {
+		return nil, err
+	}
+
+	a.updateDeviceList()
+
+	return device, nil
+}

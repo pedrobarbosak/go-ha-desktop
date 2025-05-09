@@ -9,6 +9,8 @@ export function GetDevices():Promise<Array<ha.Device>>;
 
 export function GetError():Promise<void>;
 
+export function SetBrightness(arg1:string,arg2:number):Promise<ha.Device>;
+
 export function TestConnection(arg1:string,arg2:string):Promise<void>;
 
 export function TurnOff(arg1:string):Promise<ha.Device>;

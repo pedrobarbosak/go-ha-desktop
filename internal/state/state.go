@@ -30,7 +30,7 @@ func (s *State) UpdateConfig(updated *config.Config) error {
 	s.Cfg = updated
 	s.connectClient()
 
-	s.Devices, _ = s.Ha.GetLights()
+	s.Devices, _ = s.Ha.GetDevices()
 
 	return nil
 }
@@ -103,7 +103,7 @@ func (s *State) GetDevices() ([]*ha.Device, error) {
 }
 
 func (s *State) getDevices() ([]*ha.Device, error) {
-	s.Devices, s.Err = s.Ha.GetLights()
+	s.Devices, s.Err = s.Ha.GetDevices()
 	if s.Err != nil {
 		return nil, s.Err
 	}
@@ -153,7 +153,7 @@ func (s *State) connectClient() {
 			continue
 		}
 
-		s.Devices, s.Err = s.Ha.GetLights()
+		s.Devices, s.Err = s.Ha.GetDevices()
 		if s.Err != nil {
 			return
 		}
@@ -168,6 +168,37 @@ func (s *State) IsConnected() bool {
 	defer s.m.RUnlock()
 
 	return s.Ha != nil
+}
+
+func (s *State) SetBrightness(entityID string, brightness uint) (*ha.Device, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	updated, err := s.Ha.SetBrightness(entityID, brightness)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(updated) == 0 {
+		_, s.Err = s.getDevices()
+		if s.Err != nil {
+			return nil, nil
+		}
+
+		updated = append(updated, &ha.Device{ID: entityID, State: true, Brightness: &brightness})
+	}
+
+	for _, u := range updated {
+		for _, d := range s.Devices {
+			if d.ID == u.ID {
+				d.State = u.State
+				d.Brightness = u.Brightness
+				return d, nil
+			}
+		}
+	}
+
+	return nil, errors.New("device not found")
 }
 
 func New() *State {

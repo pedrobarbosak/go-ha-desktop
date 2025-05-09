@@ -14,6 +14,10 @@ export function GetError() {
   return window['go']['main']['App']['GetError']();
 }
 
+export function SetBrightness(arg1, arg2) {
+  return window['go']['main']['App']['SetBrightness'](arg1, arg2);
+}
+
 export function TestConnection(arg1, arg2) {
   return window['go']['main']['App']['TestConnection'](arg1, arg2);
 }

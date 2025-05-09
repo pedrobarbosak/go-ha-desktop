@@ -31,6 +31,7 @@ export namespace ha {
 	    Type: string;
 	    State: boolean;
 	    Error: any;
+	    Brightness?: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Device(source);
@@ -43,6 +44,7 @@ export namespace ha {
 	        this.Type = source["Type"];
 	        this.State = source["State"];
 	        this.Error = source["Error"];
+	        this.Brightness = source["Brightness"];
 	    }
 	}
 
