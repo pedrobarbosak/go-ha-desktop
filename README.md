@@ -16,8 +16,8 @@ A desktop application for quickly managing your Home Assistant lights from your 
 
 ## TODO
 - [x] Light Toggle (On/Off)
-- [ ] Control light brightness
-- [ ] Switch Toggle (On/Off)
+- [x] Control light brightness
+- [~] Switch Toggle (On/Off)
 
 ## About
 
